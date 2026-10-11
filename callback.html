@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <!-- Only this page's own inline script may run; nothing can be loaded from elsewhere. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'sha256-0dL9BC3v35mRCeGrly1eoiKaSlLvodpR1IbhM4T3F/k='; style-src 'unsafe-inline'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>Returning to the app…</title>
+    <style>
+      body { font-family: system-ui, sans-serif; background: #0b0d10; color: #f2f4f7; display: grid; place-items: center; min-height: 100vh; margin: 0; }
+      main { max-width: 22rem; padding: 1.5rem; text-align: center; line-height: 1.5; }
+      a { color: #4c8dff; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p id="msg">Returning you to the app…</p>
+      <p><a id="link" href="#" hidden>Tap here if the app doesn’t open</a></p>
+    </main>
+    <script>
+      // Tesla redirects here after sign-in. Forward ONLY the expected parameters to the app,
+      // then wipe them from this page's address bar. Nothing is stored or sent anywhere else.
+      (function () {
+        var q = new URLSearchParams(window.location.search);
+        var out = new URLSearchParams();
+        ['code', 'state', 'error', 'error_description'].forEach(function (k) {
+          var v = q.get(k);
+          if (v && v.length < 2048) out.set(k, v);
+        });
+        history.replaceState(null, '', window.location.pathname);
+        if (!out.has('state')) {
+          document.getElementById('msg').textContent = 'This link is missing information. Please start again in the app.';
+          return;
+        }
+        var target = 'vigil://tesla/callback?' + out.toString();
+        var link = document.getElementById('link');
+        link.href = target;
+        link.hidden = false;
+        window.location.replace(target);
+      })();
+    </script>
+  </body>
+</html>
